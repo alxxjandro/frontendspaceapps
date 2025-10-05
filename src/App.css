@@ -1544,8 +1544,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(100, 181, 246, 0.2);
   border-radius: 20px;
   padding: 2rem;
   backdrop-filter: blur(10px);

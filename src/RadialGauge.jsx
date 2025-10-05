@@ -1,104 +1,140 @@
-import "./RadialGauge.css";
+// --- CONSTANTES DE CONFIGURACIÓN ---
+const VIEW_BOX_SIZE = 300; // Tamaño fijo del SVG en píxeles
+const TRACK_WIDTH = 30; // Ancho de la pista
+const TRACK_SIZE_DEGREES = 270; // El arco de la pista en grados
 
-export default function RadialGauge({ value = 0, isDarkTheme = true }) {
-  const clamped = Math.max(0, Math.min(100, value));
-  const textColor = isDarkTheme ? "#fff" : "#000";
+// --- EL COMPONENTE ---
+export default function RadialGauge({ value = 40, isDarkTheme = true }) {
+  // Asegurarnos que el valor esté siempre entre 0 y 100
+  const validValue = Math.max(0, Math.min(100, value));
 
-  // invertimos la escala: 0 bueno → 100 malo
-  const reversed = 100 - clamped;
+  // --- CÁLCULOS PARA EL DIBUJO DEL SVG ---
+  const center = VIEW_BOX_SIZE / 2;
+  const radius = center - TRACK_WIDTH / 2;
 
-  const color =
-    reversed <= 25
-      ? "greenGradient"
-      : reversed <= 50
-      ? "yellowGradient"
-      : reversed <= 75
-      ? "orangeGradient"
-      : "redGradient";
+  // Cálculos para el truco de dasharray/dashoffset
+  const circumference = 2 * Math.PI * radius;
+  const trackFillPercentage = TRACK_SIZE_DEGREES / 360;
+  const trackDashoffset = circumference * (1 - trackFillPercentage);
 
-  const label =
-    reversed <= 25
-      ? "Good"
-      : reversed <= 50
-      ? "Moderate"
-      : reversed <= 75
-      ? "Unhealthy"
-      : "Hazardous";
+  // El offset del valor se calcula en base al prop 'value'
+  const valuePercentage = (validValue / 100) * trackFillPercentage;
+  const valueDashoffset = circumference * (1 - valuePercentage);
 
-  const circumference = 2 * Math.PI * 45;
-  const offset = circumference - (reversed / 100) * circumference;
+  // Transformación para rotar la pista a la posición correcta
+  const trackTransform = `rotate(${
+    -(TRACK_SIZE_DEGREES / 2) - 90
+  }, ${center}, ${center})`;
+
+  // --- SELECCIÓN DEL GRADIENTE ---
+  const getGradientId = (value) => {
+    if (value <= 25) return "redGradient"; // Rojo
+    if (value <= 50) return "orangeGradient"; // Naranja
+    if (value <= 75) return "yellowGradient"; // Amarillo
+    return "greenGradient"; // Verde
+  };
+
+  const getGaugeText = (value) => {
+    if (value <= 25) return "Hazardous";
+    if (value <= 50) return "Unhealthy";
+    if (value <= 75) return "Moderate";
+    return "Excellent";
+  };
+
+  const gradientId = getGradientId(validValue);
+  const gaugeText = getGaugeText(validValue);
+
+  // --- SELECCIÓN DEL COLOR DEL TEXTO ---
+  const textColor = isDarkTheme ? "#ffffff" : "#000000"; // Blanco para tema oscuro, negro para tema claro
 
   return (
-    <div className={`gauge-card ${isDarkTheme ? "dark" : "light"}`}>
+    <div>
       <svg
-        className="gauge"
-        width="100%"
-        height="100%"
-        viewBox="0 0 120 120"
         xmlns="http://www.w3.org/2000/svg"
+        viewBox={`0 0 ${VIEW_BOX_SIZE} ${VIEW_BOX_SIZE}`}
+        width={VIEW_BOX_SIZE}
+        height={VIEW_BOX_SIZE}
       >
+        {/* Definición de degradados */}
         <defs>
-          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#4CAF50" />
-            <stop offset="100%" stopColor="#2E7D32" />
-          </linearGradient>
-          <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#FDD835" />
-            <stop offset="100%" stopColor="#FBC02D" />
-          </linearGradient>
-          <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#FFA726" />
-            <stop offset="100%" stopColor="#EF6C00" />
-          </linearGradient>
+          {/* Degradado rojo */}
           <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#E53935" />
-            <stop offset="100%" stopColor="#B71C1C" />
+            <stop offset="0%" stopColor="#ce1515ff" /> {/* Rojo claro */}
+            <stop offset="100%" stopColor="#9e0202ff" /> {/* Rojo oscuro */}
+          </linearGradient>
+
+          {/* Degradado naranja */}
+          <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ffb84d" /> {/* Naranja claro */}
+            <stop offset="100%" stopColor="#fc940cff" /> {/* Naranja oscuro */}
+          </linearGradient>
+
+          {/* Degradado amarillo */}
+          <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ffcc00" /> {/* Amarillo claro */}
+            <stop offset="100%" stopColor="#ffbb00ff" /> {/* Amarillo oscuro */}
+          </linearGradient>
+
+          {/* Degradado verde */}
+          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#009933" /> {/* Verde claro */}
+            <stop offset="100%" stopColor="#006b24ff" /> {/* Verde oscuro */}
           </linearGradient>
         </defs>
 
-        {/* Background track */}
+        {/* Pista de fondo (gris oscuro) */}
         <circle
-          className="gauge-track"
-          cx="60"
-          cy="60"
-          r="45"
-          strokeWidth="10"
           fill="none"
-        />
-
-        {/* Value arc */}
-        <circle
-          className="gauge-value"
-          cx="60"
-          cy="60"
-          r="45"
-          strokeWidth="10"
-          stroke={`url(#${color})`}
-          strokeLinecap="round"
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke="#333"
+          strokeWidth={TRACK_WIDTH}
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          transform="rotate(-90 60 60)"
-          fill="none"
+          strokeDashoffset={trackDashoffset}
+          strokeLinecap="round"
+          transform={trackTransform}
         />
 
-        {/* Center text */}
+        {/* Pista de valor (degradado dinámico) */}
+        <circle
+          fill="none"
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke={`url(#${gradientId})`} // Aplica el degradado dinámico
+          strokeWidth={TRACK_WIDTH}
+          strokeDasharray={circumference}
+          strokeDashoffset={valueDashoffset}
+          strokeLinecap="round"
+          transform={trackTransform}
+          style={{ transition: "stroke-dashoffset 0.3s ease" }}
+        />
+
+        {/* Texto con el valor en el centro */}
         <text
           x="50%"
-          y="52%"
-          className="gauge-text"
+          y="45%" /* Ajusta la posición vertical del número */
+          fill={textColor} // Cambia dinámicamente según el tema
+          fontSize="60"
+          fontWeight="bold"
           textAnchor="middle"
-          fill={textColor}
+          dominantBaseline="middle"
         >
-          {clamped}
+          {validValue}
         </text>
+
+        {/* Texto adicional debajo del número */}
         <text
           x="50%"
-          y="70%"
-          className="gauge-subtext"
+          y="65%" /* Ajusta la posición vertical del texto */
+          fill={textColor} // Cambia dinámicamente según el tema
+          fontSize="24"
+          fontWeight="normal"
           textAnchor="middle"
-          fill={textColor}
+          dominantBaseline="middle"
         >
-          {label}
+          {gaugeText}
         </text>
       </svg>
     </div>
