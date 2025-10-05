@@ -5,6 +5,15 @@ import "./HealthAssessmentPopup.css";
 const HealthAssessmentPopup = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("popup-open");
+    } else {
+      document.body.classList.remove("popup-open");
+    }
+    return () => document.body.classList.remove("popup-open");
+  }, [isOpen]);
+
   const [formData, setFormData] = useState({
     sex: "",
     isPregnant: false,

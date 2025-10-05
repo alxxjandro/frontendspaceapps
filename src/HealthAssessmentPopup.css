@@ -421,3 +421,45 @@
     width: 100%;
   }
 }
+
+/* Arreglo del scroll roto en móviles */
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+/* Permitir que solo el formulario sea scrollable */
+.assessment-form {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Bloquear el scroll del body cuando el popup esté abierto */
+body.popup-open {
+  overflow: hidden;
+  touch-action: none;
+  position: fixed;
+  width: 100%;
+}
+
+/* Mejora del scroll en iOS */
+@supports (-webkit-touch-callout: none) {
+  .assessment-form {
+    overflow-y: scroll;
+  }
+}
+
+/* En pantallas pequeñas, el popup ocupa más alto */
+@media (max-width: 640px) {
+  .popup-container {
+    height: 90vh;
+    max-height: none;
+  }
+
+  .assessment-form {
+    padding-bottom: 2rem; /* espacio extra para el botón */
+  }
+}
