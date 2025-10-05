@@ -2,30 +2,27 @@ import "./RadialGauge.css";
 import React from "react";
 
 export default function RadialGauge({ value = 0, isDarkTheme = true }) {
-  // --- Tu lógica original ---
   const clamped = Math.max(0, Math.min(100, value));
-  const reversed = 100 - clamped;
   const textColor = isDarkTheme ? "#fff" : "#000";
 
   const color =
-    reversed <= 25
+    clamped <= 25
       ? "greenGradient"
-      : reversed <= 50
+      : clamped <= 50
       ? "yellowGradient"
-      : reversed <= 75
+      : clamped <= 75
       ? "orangeGradient"
       : "redGradient";
 
   const label =
-    reversed <= 25
+    clamped <= 25
       ? "Good"
-      : reversed <= 50
+      : clamped <= 50
       ? "Moderate"
-      : reversed <= 75
+      : clamped <= 75
       ? "Unhealthy"
       : "Hazardous";
 
-  // --- CONFIGURACIÓN VISUAL NUEVA ---
   const VIEW_BOX_SIZE = 300;
   const TRACK_WIDTH = 30;
   const TRACK_SIZE_DEGREES = 270;
@@ -33,21 +30,18 @@ export default function RadialGauge({ value = 0, isDarkTheme = true }) {
   const radius = center - TRACK_WIDTH / 2;
   const circumference = 2 * Math.PI * radius;
 
-  // Arco visible (de 270°)
   const trackFillPercentage = TRACK_SIZE_DEGREES / 360;
   const trackDashoffset = circumference * (1 - trackFillPercentage);
 
-  // Offset del valor (usando reversed, para mantener tu lógica)
-  const valuePercentage = (reversed / 100) * trackFillPercentage;
+  const valuePercentage = (clamped / 100) * trackFillPercentage;
   const valueDashoffset = circumference * (1 - valuePercentage);
 
-  // Rotar el arco al centro
   const trackTransform = `rotate(${
     -(TRACK_SIZE_DEGREES / 2) - 90
   }, ${center}, ${center})`;
 
   return (
-    <div className={` ${isDarkTheme ? "dark" : "light"}`}>
+    <div className={`${isDarkTheme ? "dark" : "light"}`}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox={`0 0 ${VIEW_BOX_SIZE} ${VIEW_BOX_SIZE}`}
@@ -73,7 +67,7 @@ export default function RadialGauge({ value = 0, isDarkTheme = true }) {
           </linearGradient>
         </defs>
 
-        {/* Pista gris */}
+        {/* pista gris */}
         <circle
           fill="none"
           cx={center}
@@ -87,7 +81,6 @@ export default function RadialGauge({ value = 0, isDarkTheme = true }) {
           transform={trackTransform}
         />
 
-        {/* Valor */}
         <circle
           fill="none"
           cx={center}
@@ -102,7 +95,6 @@ export default function RadialGauge({ value = 0, isDarkTheme = true }) {
           style={{ transition: "stroke-dashoffset 0.5s ease" }}
         />
 
-        {/* Texto principal */}
         <text
           x="50%"
           y="45%"
@@ -115,7 +107,6 @@ export default function RadialGauge({ value = 0, isDarkTheme = true }) {
           {clamped}
         </text>
 
-        {/* Subtexto */}
         <text
           x="50%"
           y="65%"
